@@ -3,10 +3,10 @@ server:
 
 database:
   host: localhost
-  port: 5432
+  port: 3306
   user: your_username
   password: your_password
-  name: your_database_name
+  name: dtxcasemgnt
 
 log:
   level: info

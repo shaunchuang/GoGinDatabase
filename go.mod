@@ -1,13 +1,18 @@
 module golang-gin-app
 
-go 1.18
+go 1.22
+
+toolchain go1.24.2
 
 require (
+	github.com/brianvoe/gofakeit/v7 v7.2.1
 	github.com/gin-gonic/gin v1.7.4
+	github.com/go-sql-driver/mysql v1.9.2
 // Add other dependencies here as needed
 )
 
 require (
+	filippo.io/edwards25519 v1.1.0 // indirect
 	github.com/gin-contrib/sse v0.1.0 // indirect
 	github.com/go-playground/locales v0.13.0 // indirect
 	github.com/go-playground/universal-translator v0.17.0 // indirect
