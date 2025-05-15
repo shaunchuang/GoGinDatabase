@@ -53,18 +53,27 @@ type App struct {
 
 func NewApp() *App {
 	config := loadConfig()
+	fmt.Printf("Attempting to connect to primary database with settings: Host=%s, Port=%d, User=%s, DB=%s\n",
+		config.Database.Host, config.Database.Port, config.Database.User, config.Database.Name)
 	db, err := initDB(config, "primary")
 	if err != nil {
-		panic(fmt.Sprintf("Failed to connect to primary database: %v", err))
+		panic(fmt.Sprintf("Failed to connect to primary database: %v. Please ensure your MariaDB server is running and set the correct credentials using environment variables: DB_HOST, DB_PORT, DB_USER, DB_PASSWORD, DB_NAME", err))
 	}
+	// Secondary database connection is optional
+	fmt.Printf("Attempting to connect to secondary database with settings: Host=%s, Port=%d, User=%s, DB=%s\n",
+		config.DatabaseSecondary.Host, config.DatabaseSecondary.Port, config.DatabaseSecondary.User, config.DatabaseSecondary.Name)
 	dbSecondary, err := initDB(config, "secondary")
-	if err != nil {
-		panic(fmt.Sprintf("Failed to connect to secondary database: %v", err))
+	var svcSecondary *service.Service
+	if err == nil {
+		repoSecondary := repository.NewUserRepository(dbSecondary)
+		svcSecondary = service.NewService(repoSecondary)
+	} else {
+		fmt.Printf("Warning: Could not connect to secondary database: %v. Secondary API will be disabled. Set environment variables DB_SECONDARY_HOST, DB_SECONDARY_PORT, DB_SECONDARY_USER, DB_SECONDARY_PASSWORD, DB_SECONDARY_NAME if needed.\n", err)
+		svcSecondary = nil
+		dbSecondary = nil
 	}
 	repo := repository.NewUserRepository(db)
-	repoSecondary := repository.NewUserRepository(dbSecondary)
 	svc := service.NewService(repo)
-	svcSecondary := service.NewService(repoSecondary)
 	router := gin.Default()
 	app := &App{
 		Router:           router,
@@ -85,7 +94,7 @@ func loadConfig() *Config {
 	return &Config{
 		Server: struct {
 			Port int
-		}{Port: getEnvInt("SERVER_PORT", 8080)},
+		}{Port: getEnvInt("SERVER_PORT", 5000)},
 		Database: struct {
 			Host     string
 			Port     int
@@ -110,7 +119,7 @@ func loadConfig() *Config {
 			Port:     getEnvInt("DB_SECONDARY_PORT", 3306),
 			User:     getEnv("DB_SECONDARY_USER", "root"),
 			Password: getEnv("DB_SECONDARY_PASSWORD", "P@ssw0rd"),
-			Name:     getEnv("DB_SECONDARY_NAME", "another_database"),
+			Name:     getEnv("DB_SECONDARY_NAME", "dtxtraining"),
 		},
 		Log: struct {
 			Level  string
@@ -164,11 +173,13 @@ func initDB(config *Config, dbType string) (*sql.DB, error) {
 func (a *App) initializeRoutes() {
 	// Initialize your routes here
 	a.Router.GET("/hello", handlers.HelloHandler)
-	a.Router.GET("/fake-users", handlers.GenerateFakeUsersFormHandler)
+	a.Router.GET("/fake-users", handlers.GenerateFakeUsersFormHandler(a.Service))
 	a.Router.POST("/fake-users", handlers.GenerateFakeUsersHandler(a.Service))
-	// Route for secondary database API
-	a.Router.GET("/fake-users-secondary", handlers.GenerateFakeUsersFormHandler)
-	a.Router.POST("/fake-users-secondary", handlers.GenerateFakeUsersHandler(a.ServiceSecondary))
+	// Route for secondary database API, only if connection succeeded
+	if a.ServiceSecondary != nil {
+		a.Router.GET("/fake-users-secondary", handlers.GenerateFakeUsersFormHandler(a.ServiceSecondary))
+		a.Router.POST("/fake-users-secondary", handlers.GenerateFakeUsersHandler(a.ServiceSecondary))
+	}
 }
 
 func (a *App) initializeMiddleware() {
