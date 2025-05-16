@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ .title }}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f8f9fa;
+        }
+        .container {
+            border: 1px solid #ddd;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            background-color: white;
+        }
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 25px;
+            border-bottom: 2px solid #eaeaea;
+            padding-bottom: 10px;
+        }
+        form {
+            margin: 20px 0;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #444;
+        }
+        input[type="number"] {
+            padding: 10px;
+            font-size: 16px;
+            width: 250px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            transition: border-color 0.3s;
+        }
+        input[type="number"]:focus {
+            border-color: #4CAF50;
+            outline: none;
+            box-shadow: 0 0 5px rgba(76, 175, 80, 0.3);
+        }
+        .checkbox-item {
+            margin-bottom: 15px;
+            background-color: #f9f9f9;
+            padding: 10px;
+            border-radius: 4px;
+            border: 1px solid #e0e0e0;
+        }
+        .checkbox-item input[type="checkbox"] {
+            margin-right: 10px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .message {
+            color: #4CAF50;
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #e8f5e9;
+            border-left: 4px solid #4CAF50;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        .error {
+            color: #e53935;
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #ffebee;
+            border-left: 4px solid #e53935;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            font-size: 14px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+            position: sticky;
+            top: 0;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+        .table-container {
+            max-height: 600px;
+            overflow-y: auto;
+            margin-top: 20px;
+        }
+        .summary {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #e8f5e9;
+            border-radius: 4px;
+        }
+        .tag {
+            display: inline-block;
+            padding: 3px 6px;
+            background-color: #e0f7fa;
+            border-radius: 3px;
+            border: 1px solid #80deea;
+            margin-right: 5px;
+            font-size: 12px;
+        }
+        .back-link {
+            color: #3498db;
+            text-decoration: none;
+            display: inline-block;
+            padding: 8px 12px;
+            border: 1px solid #3498db;
+            border-radius: 4px;
+            font-weight: bold;
+            transition: all 0.3s;
+            margin-top: 20px;
+        }
+        .back-link:hover {
+            background-color: #3498db;
+            color: white;
+            text-decoration: none;
+        }
+        .action-buttons {
+            margin-top: 15px;
+            display: flex;
+            gap: 10px;
+        }
+        .btn-info {
+            background-color: #3498db;
+        }
+        .btn-info:hover {
+            background-color: #2980b9;
+        }
+        .btn-export {
+            background-color: #f39c12;
+        }
+        .btn-export:hover {
+            background-color: #d35400;
+        }
+        .copy-btn {
+            background-color: #9b59b6;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 6px 10px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        .copy-btn:hover {
+            background-color: #8e44ad;
+        }
+        #sql-modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.4);
+        }
+        #sql-modal-content {
+            background-color: white;
+            margin: 10% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            border-radius: 8px;
+            max-height: 70vh;
+            overflow-y: auto;
+        }
+        .close-btn {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .close-btn:hover {
+            color: black;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>產生假病患資料</h1>
+        
+        {{ if .error }}
+            <div class="error">{{ .error }}</div>
+        {{ end }}
+        
+        <form method="POST" action="/fake-patients">
+            <div class="form-group">
+                <label for="count">請輸入要生成的假病患資料數量（1-100）：</label>
+                <input type="number" id="count" name="count" min="1" max="100" value="{{ if .count }}{{ .count }}{{ else }}10{{ end }}" required>
+            </div>
+            
+            <div class="checkbox-item">
+                <input type="checkbox" id="insertToDB" name="insertToDB" value="true" {{ if .insertToDB }}checked{{ end }}>
+                <label for="insertToDB">插入資料庫（如勾選，會實際將數據存入資料庫）</label>
+            </div>
+            
+            <button type="submit">生成假病患資料</button>
+        </form>
+        
+        {{ if .generated }}
+            <div class="summary">
+                <h3>生成結果摘要</h3>
+                <p>生成時間: {{ .timestamp }}</p>
+                <p>生成數量: {{ .count }}</p>
+                {{ if .insertToDB }}
+                    <p>資料庫插入情況: 成功插入 {{ .successCount }}/{{ .count }} 筆資料</p>
+                    {{ if .errors }}
+                        <div class="error">
+                            <strong>發生錯誤:</strong>
+                            <ul>
+                                {{ range .errors }}
+                                    <li>{{ . }}</li>
+                                {{ end }}
+                            </ul>
+                        </div>
+                    {{ end }}
+                {{ end }}
+                
+                <div class="action-buttons">
+                    <button class="btn-export" id="btnExportCSV">匯出 CSV</button>
+                    <button class="btn-info" id="btnShowSQL">顯示 SQL 插入語句</button>
+                </div>
+            </div>
+            
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>姓名</th>
+                            <th>性別</th>
+                            <th>身分證字號</th>
+                            <th>年齡</th>
+                            <th>生日</th>
+                            <th>地址</th>
+                            <th>電話</th>
+                            <th>信箱</th>
+                            <th>緊急聯絡人</th>
+                            <th>緊急聯絡人電話</th>
+                            <th>疾病史</th>
+                            <th>醫療史</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {{ range .patients }}
+                            <tr>
+                                <td>{{ .ID }}</td>
+                                <td>{{ .Name }}</td>
+                                <td>{{ if eq .Gender "M" }}男{{ else }}女{{ end }}</td>
+                                <td>{{ .IDNo }}</td>
+                                <td>{{ .Age }}</td>
+                                <td>{{ .Birth.Format "2006-01-02" }}</td>
+                                <td>{{ .City }}{{ .District }}{{ .Address }}</td>
+                                <td>{{ .Phone }}</td>
+                                <td>{{ .Mail }}</td>
+                                <td>{{ .EmergencyContact }} ({{ .EmergencyRelation }})</td>
+                                <td>{{ .EmergencyPhone }}</td>
+                                <td>
+                                    {{ range .HistoryDiseases }}
+                                        <span class="tag">{{ . }}</span>
+                                    {{ end }}
+                                    {{ if .OtherHistoryDisease }}
+                                        <span class="tag">{{ .OtherHistoryDisease }}</span>
+                                    {{ end }}
+                                </td>
+                                <td>
+                                    {{ range .MedicalHistories }}
+                                        <span class="tag">{{ . }}</span>
+                                    {{ end }}
+                                    {{ if .OtherMedicalHistory }}
+                                        <span class="tag">{{ .OtherMedicalHistory }}</span>
+                                    {{ end }}
+                                </td>
+                            </tr>
+                        {{ end }}
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- SQL 顯示對話框 -->
+            <div id="sql-modal">
+                <div id="sql-modal-content">
+                    <span class="close-btn">&times;</span>
+                    <h2>SQL 插入語句</h2>
+                    <div style="background-color: #f5f5f5; padding: 15px; border-radius: 4px; margin-top: 10px;">
+                        <button class="copy-btn" id="btnCopy">複製到剪貼簿</button>
+                        <pre id="sql-code" style="white-space: pre-wrap; margin-top: 10px;"></pre>
+                    </div>
+                </div>
+            </div>
+
+            <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                // 日期格式化函數
+                function formatDate(dateStr) {
+                    const date = new Date(dateStr);
+                    return date.getFullYear() + '-' + 
+                          ('0' + (date.getMonth() + 1)).slice(-2) + '-' + 
+                          ('0' + date.getDate()).slice(-2);
+                }
+                
+                // 從DOM表格讀取數據
+                function readPatientsFromTable() {
+                    const patients = [];
+                    const rows = document.querySelectorAll('table tbody tr');
+                    
+                    rows.forEach(function(row) {
+                        const cells = row.querySelectorAll('td');
+                        if (cells.length >= 13) {                            // 解析病史標籤
+                            const historyDiseases = [];
+                            const historyDiseaseIDs = [];
+                            cells[11].querySelectorAll('.tag').forEach(function(tag) {
+                                const diseaseName = tag.textContent.trim();
+                                historyDiseases.push(diseaseName);
+                                // 如果找到對應的疾病ID，將其添加到ID數組中
+                                if (diseaseMapping[diseaseName]) {
+                                    historyDiseaseIDs.push(diseaseMapping[diseaseName]);
+                                }
+                            });
+                            
+                            // 解析醫療史標籤
+                            const medicalHistories = [];
+                            cells[12].querySelectorAll('.tag').forEach(function(tag) {
+                                medicalHistories.push(tag.textContent.trim());
+                            });
+                            
+                            // 解析緊急聯絡人資訊
+                            let emergencyContact = cells[9].textContent.trim();
+                            let emergencyRelation = '';
+                            const match = emergencyContact.match(/(.+)\s*\((.+)\)/);
+                            if (match) {
+                                emergencyContact = match[1].trim();
+                                emergencyRelation = match[2].trim();
+                            }
+                              // 定義疾病名稱與ID的映射
+                            const diseaseMapping = {
+                                "中樞神經損傷": 1,
+                                "心血管疾病": 2,
+                                "呼吸方面疾病": 3,
+                                "肝臟疾病": 4,
+                                "糖尿病": 5,
+                                "腎臟病": 6,
+                                "癌症": 7,
+                                "免疫相關疾病": 8
+                            };
+                            
+                            // 構建病患對象
+                            const patient = {
+                                ID: parseInt(cells[0].textContent.trim(), 10) || 0,
+                                Name: cells[1].textContent.trim(),
+                                Gender: cells[2].textContent.trim() === '男' ? 'M' : 'F',
+                                IDNo: cells[3].textContent.trim(),
+                                Age: parseInt(cells[4].textContent.trim(), 10) || 0,
+                                Birth: cells[5].textContent.trim(),
+                                Address: cells[6].textContent.trim(),
+                                Phone: cells[7].textContent.trim(),
+                                Mail: cells[8].textContent.trim(),
+                                EmergencyContact: emergencyContact,
+                                EmergencyRelation: emergencyRelation,
+                                EmergencyPhone: cells[10].textContent.trim(),                                HistoryDiseases: historyDiseases,
+                                HistoryDiseaseIDs: historyDiseaseIDs,
+                                MedicalHistories: medicalHistories
+                            };
+                            
+                            patients.push(patient);
+                        }
+                    });
+                    
+                    return patients;
+                }
+                
+                // 顯示 SQL 語句
+                document.getElementById('btnShowSQL').addEventListener('click', function() {
+                    const patients = readPatientsFromTable();
+                    showInsertSQL(patients);
+                });
+                
+                // 關閉 SQL 對話框
+                document.querySelector('.close-btn').addEventListener('click', function() {
+                    document.getElementById('sql-modal').style.display = 'none';
+                });
+                
+                // 複製到剪貼簿
+                document.getElementById('btnCopy').addEventListener('click', function() {
+                    const text = document.getElementById('sql-code').textContent;
+                    navigator.clipboard.writeText(text).then(function() {
+                        alert('已複製到剪貼簿');
+                    }, function() {
+                        alert('複製失敗');
+                    });
+                });
+                
+                // 匯出 CSV
+                document.getElementById('btnExportCSV').addEventListener('click', function() {
+                    const patients = readPatientsFromTable();
+                    exportToCSV(patients);
+                });
+                
+                function showInsertSQL(patients) {
+                    let sql = "";
+                    
+                    if (patients && patients.length > 0) {
+                        patients.forEach(function(patient) {
+                            // 主要病患資料 SQL
+                            sql += "-- 插入病患 " + patient.Name + "\n";
+                            sql += "INSERT INTO patient (name, gender, idno, age, birth, address, city, district, phone, mail, disease_id, emergency_contact, emergency_phone, emergency_relation, OTHERHISTORYDISEASE, OTHERMEDICALHISTORY)\n";
+                            sql += "VALUES ('" + patient.Name + "', '" + patient.Gender + "', '" + patient.IDNo + "', " + patient.Age + ", '" + patient.Birth + "',\n";
+                            
+                            // 分析地址字段，提取城市和地區（如果可能）
+                            let address = patient.Address;
+                            let city = '';
+                            let district = '';
+                            
+                            // 防止 SQL 注入 
+                            address = address.replace(/'/g, "''");
+                            
+                            sql += "'" + address + "', '" + city + "', '" + district + "', '" + patient.Phone + "', '" + patient.Mail + "',\n";
+                            sql += "1, '" + patient.EmergencyContact + "', '" + patient.EmergencyPhone + "', '" + patient.EmergencyRelation + "',\n";
+                            sql += "'', '');\n\n";
+                            
+                            // 使用 LAST_INSERT_ID() 獲取最後插入的 ID
+                            sql += "-- 使用以下變數來存儲最後插入的ID\n";
+                            sql += "SET @last_patient_id = LAST_INSERT_ID();\n\n";
+                              // 插入病史資料
+                            if (patient.HistoryDiseases && patient.HistoryDiseases.length > 0) {
+                                sql += "-- 插入病史資料\n";
+                                // 定義疾病名稱與ID的映射
+                                const diseaseMapping = {
+                                    "中樞神經損傷": 1,
+                                    "心血管疾病": 2,
+                                    "呼吸方面疾病": 3,
+                                    "肝臟疾病": 4,
+                                    "糖尿病": 5,
+                                    "腎臟病": 6,
+                                    "癌症": 7,
+                                    "免疫相關疾病": 8
+                                };
+                                
+                                patient.HistoryDiseases.forEach(function(disease) {
+                                    if (disease) {
+                                        // 防止 SQL 注入
+                                        const safedisease = disease.replace(/'/g, "''");
+                                        // 獲取疾病ID，如果找不到則預設為1
+                                        const diseaseId = diseaseMapping[disease] || 1;
+                                        sql += "INSERT INTO patient_history_disease (patient_id, history_disease, disease_id) VALUES (@last_patient_id, '" + safedisease + "', " + diseaseId + ");\n";
+                                    }
+                                });
+                                sql += '\n';
+                            }
+                            
+                            // 插入醫療史資料
+                            if (patient.MedicalHistories && patient.MedicalHistories.length > 0) {
+                                sql += "-- 插入醫療史資料\n";
+                                patient.MedicalHistories.forEach(function(history) {
+                                    if (history) {
+                                        // 防止 SQL 注入
+                                        const safehistory = history.replace(/'/g, "''");
+                                        sql += "INSERT INTO patient_medical_history (patient_id, medical_history) VALUES (@last_patient_id, '" + safehistory + "');\n";
+                                    }
+                                });
+                                sql += '\n';
+                            }
+                            
+                            sql += "-- -------------------------------\n\n";
+                        });
+                    } else {
+                        sql = "// 沒有生成任何病患數據";
+                    }
+                    
+                    document.getElementById('sql-code').textContent = sql;
+                    document.getElementById('sql-modal').style.display = 'block';
+                }
+                
+                function exportToCSV(patients) {
+                    let csvContent = "ID,姓名,性別,身分證字號,年齡,生日,地址,電話,信箱,緊急聯絡人,緊急聯絡人電話,緊急聯絡人關係,疾病史,醫療史\n";
+                    
+                    if (patients && patients.length > 0) {
+                        patients.forEach(function(patient) {
+                            const gender = patient.Gender === 'M' ? '男' : '女';
+                            const historyDiseases = patient.HistoryDiseases ? patient.HistoryDiseases.join('|') : '';
+                            const medicalHistories = patient.MedicalHistories ? patient.MedicalHistories.join('|') : '';
+                            
+                            // 確保 CSV 格式正確，處理包含逗號的字段
+                            const escapeCsvField = function(field) {
+                                if (field && field.includes(',')) {
+                                    return '"' + field.replace(/"/g, '""') + '"';
+                                }
+                                return field || '';
+                            };
+                            
+                            csvContent += [
+                                patient.ID,
+                                escapeCsvField(patient.Name),
+                                gender,
+                                escapeCsvField(patient.IDNo),
+                                patient.Age,
+                                escapeCsvField(patient.Birth),
+                                escapeCsvField(patient.Address),
+                                escapeCsvField(patient.Phone),
+                                escapeCsvField(patient.Mail),
+                                escapeCsvField(patient.EmergencyContact),
+                                escapeCsvField(patient.EmergencyPhone),
+                                escapeCsvField(patient.EmergencyRelation),
+                                escapeCsvField(historyDiseases),
+                                escapeCsvField(medicalHistories)
+                            ].join(",") + "\n";
+                        });
+                        
+                        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                        const link = document.createElement("a");
+                        const url = URL.createObjectURL(blob);
+                        link.setAttribute("href", url);
+                        link.setAttribute("download", "fake_patients_" + new Date().toISOString().replace(/[:.]/g, '_') + ".csv");
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                    }
+                }
+            });
+            </script>
+        {{ end }}
+        
+        <a href="/" class="back-link">返回首頁</a>
+    </div>
+</body>
+</html>

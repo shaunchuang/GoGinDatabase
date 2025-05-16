@@ -178,6 +178,10 @@ func (a *App) initializeRoutes() {
 	a.Router.GET("/fake-users", handlers.GenerateFakeUsersFormHandler(a.Service))
 	a.Router.POST("/fake-users", handlers.GenerateFakeUsersHandler(a.Service))
 
+	// 新增假病患生成路由
+	a.Router.GET("/fake-patients", handlers.GenerateFakePatientsFormHandler())
+	a.Router.POST("/fake-patients", handlers.GenerateFakePatientsHandler(a.DB))
+
 	// 新增可預約時段管理路由
 	a.Router.GET("/available-slots", handlers.AvailableSlotsFormHandler(a.Service))
 	a.Router.POST("/available-slots/generate", handlers.GenerateAvailableSlotsHandler(a.Service))
@@ -199,6 +203,9 @@ func (a *App) initializeMiddleware() {
 	// Initialize your middleware here
 	a.Router.Use(gin.Logger())
 	a.Router.Use(gin.Recovery())
+
+	// 添加靜態文件服務
+	a.Router.Static("/static", "./static")
 }
 
 func (a *App) loadTemplates() {
