@@ -6,8 +6,10 @@ import (
 	"golang-gin-app/internal/handlers"
 	"golang-gin-app/internal/repository"
 	"golang-gin-app/internal/service"
+	"html/template"
 	"os"
 	"strconv"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	_ "github.com/go-sql-driver/mysql"
@@ -175,6 +177,17 @@ func (a *App) initializeRoutes() {
 	a.Router.GET("/hello", handlers.HelloHandler)
 	a.Router.GET("/fake-users", handlers.GenerateFakeUsersFormHandler(a.Service))
 	a.Router.POST("/fake-users", handlers.GenerateFakeUsersHandler(a.Service))
+
+	// 新增可預約時段管理路由
+	a.Router.GET("/available-slots", handlers.AvailableSlotsFormHandler(a.Service))
+	a.Router.POST("/available-slots/generate", handlers.GenerateAvailableSlotsHandler(a.Service))
+	a.Router.GET("/available-slots/view", handlers.ViewAvailableSlotsHandler(a.Service))
+	// 時段編輯與刪除路由
+	a.Router.GET("/available-slots/edit/:id", handlers.EditAvailableSlotFormHandler(a.Service))
+	a.Router.POST("/available-slots/update/:id", handlers.UpdateAvailableSlotHandler(a.Service))
+	a.Router.POST("/available-slots/delete/:id", handlers.DeleteAvailableSlotHandler(a.Service))
+	a.Router.DELETE("/available-slots/delete/:id", handlers.DeleteAvailableSlotHandler(a.Service))
+
 	// Route for secondary database API, only if connection succeeded
 	if a.ServiceSecondary != nil {
 		a.Router.GET("/fake-users-secondary", handlers.GenerateFakeUsersFormHandler(a.ServiceSecondary))
@@ -189,6 +202,25 @@ func (a *App) initializeMiddleware() {
 }
 
 func (a *App) loadTemplates() {
+	// 添加自定義模板函數
+	a.Router.SetFuncMap(template.FuncMap{
+		"add": func(a, b int) int {
+			return a + b
+		},
+		// 格式化星期幾，將英文轉換為中文
+		"formatWeekday": func(date time.Time) string {
+			weekdays := map[string]string{
+				"Monday":    "星期一",
+				"Tuesday":   "星期二",
+				"Wednesday": "星期三",
+				"Thursday":  "星期四",
+				"Friday":    "星期五",
+				"Saturday":  "星期六",
+				"Sunday":    "星期日",
+			}
+			return weekdays[date.Weekday().String()]
+		},
+	})
 	// Load HTML templates
 	a.Router.LoadHTMLGlob("templates/*")
 }

@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ .title }}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f8f9fa;
+        }
+        .container {
+            border: 1px solid #ddd;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            background-color: white;
+        }
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 25px;
+            border-bottom: 2px solid #eaeaea;
+            padding-bottom: 10px;
+        }
+        h2 {
+            color: #2c3e50;
+            margin-top: 30px;
+            margin-bottom: 15px;
+        }
+        form {
+            margin: 20px 0;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #444;
+        }
+        select, input[type="number"], input[type="time"] {
+            padding: 10px;
+            font-size: 16px;
+            width: 250px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            margin-bottom: 15px;
+            transition: border-color 0.3s;
+        }
+        select:focus, input:focus {
+            border-color: #4CAF50;
+            outline: none;
+            box-shadow: 0 0 5px rgba(76, 175, 80, 0.3);
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-row {
+            display: flex;
+            flex-wrap: wrap;
+            margin-right: -15px;
+            margin-left: -15px;
+        }
+        .form-column {
+            flex: 0 0 33%;
+            max-width: 33%;
+            padding-right: 15px;
+            padding-left: 15px;
+            margin-bottom: 15px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .message {
+            color: #4CAF50;
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #e8f5e9;
+            border-left: 4px solid #4CAF50;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        .error {
+            color: #e53935;
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #ffebee;
+            border-left: 4px solid #e53935;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        .slot-actions {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 5px;
+        }
+        .slot-edit-btn, .slot-delete-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            margin-left: 6px;
+            padding: 2px 5px;
+            transition: all 0.2s;
+            font-size: 16px;
+        }
+        .slot-edit-btn {
+            color: #2980b9;
+        }
+        .slot-edit-btn:hover {
+            color: #3498db;
+            transform: scale(1.2);
+        }
+        .slot-delete-btn {
+            color: #c0392b;
+            background: none;
+            padding: 0;
+            font-size: 16px;
+        }
+        .slot-delete-btn:hover {
+            color: #e74c3c;
+            transform: scale(1.2);
+        }
+        .icon-edit, .icon-delete {
+            font-style: normal;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 25px;
+            box-shadow: 0 1px 5px rgba(0,0,0,0.1);
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background-color: #f5f5f5;
+            color: #333;
+            font-weight: bold;
+        }
+        tr:nth-child(even) {
+            background-color: #fafafa;
+        }
+        tr:hover {
+            background-color: #f0f0f0;
+        }
+        .btn-secondary {
+            background-color: #3498db;
+        }
+        .btn-secondary:hover {
+            background-color: #2980b9;
+        }
+        .slot-date-group {
+            margin-bottom: 20px;
+            border: 1px solid #eee;
+            padding: 15px;
+            border-radius: 5px;
+        }
+        .slot-date-header {
+            font-weight: bold;
+            margin-bottom: 10px;
+            background-color: #f5f5f5;
+            padding: 8px;
+            border-radius: 3px;
+        }
+        .slot-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            grid-gap: 10px;
+            margin-bottom: 10px;
+        }
+        .slot-item {
+            border: 1px solid #ddd;
+            padding: 10px;
+            border-radius: 4px;
+            background-color: white;
+        }
+        .slot-time {
+            font-weight: bold;
+            color: #333;
+        }
+        .slot-status {
+            display: inline-block;
+            margin-top: 5px;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 12px;
+        }
+        .slot-available {
+            background-color: #e8f5e9;
+            color: #388e3c;
+        }
+        .slot-booked {
+            background-color: #ffebee;
+            color: #d32f2f;
+        }
+        .tab-container {
+            margin-bottom: 20px;
+        }
+        .tab {
+            display: inline-block;
+            padding: 10px 20px;
+            cursor: pointer;
+            border: 1px solid #ccc;
+            border-bottom: none;
+            border-radius: 4px 4px 0 0;
+            background-color: #f0f0f0;
+            margin-right: 5px;
+        }
+        .tab.active {
+            background-color: white;
+            border-bottom: 1px solid white;
+            margin-bottom: -1px;
+        }
+        .tab-content {
+            display: none;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 0 0 4px 4px;
+            background-color: white;
+        }        .tab-content.active {
+            display: block;
+        }
+        .back-link {
+            color: #3498db;
+            text-decoration: none;
+            display: inline-block;
+            padding: 8px 12px;
+            border: 1px solid #3498db;
+            border-radius: 4px;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        .back-link:hover {
+            background-color: #3498db;
+            color: white;
+            text-decoration: none;
+        }
+    </style>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 切換標籤的函數
+            function setupTabs() {
+                const tabs = document.querySelectorAll('.tab');
+                const tabContents = document.querySelectorAll('.tab-content');
+                
+                tabs.forEach(tab => {
+                    tab.addEventListener('click', () => {
+                        const targetId = tab.getAttribute('data-target');
+                        
+                        // 移除所有標籤的活動狀態
+                        tabs.forEach(t => t.classList.remove('active'));
+                        tabContents.forEach(tc => tc.classList.remove('active'));
+                        
+                        // 設置目標標籤為活動狀態
+                        tab.classList.add('active');
+                        document.getElementById(targetId).classList.add('active');
+                    });
+                });
+            }
+            
+            // 初始化標籤
+            setupTabs();
+            
+            // 模擬點擊第一個標籤，確保它被激活
+            const firstTab = document.querySelector('.tab');
+            if (firstTab) {
+                firstTab.click();
+            }
+            
+            // 查看時段時，選擇的醫師/治療師
+            const providerSelect = document.getElementById('provider');
+            const viewButton = document.getElementById('viewButton');
+            
+            if (providerSelect && viewButton) {
+                viewButton.addEventListener('click', function() {
+                    const selectedID = providerSelect.value;
+                    if (selectedID) {
+                        window.location.href = '/available-slots/view?doctorID=' + selectedID;
+                    } else {
+                        alert('請先選擇醫師或治療師');
+                    }
+                });
+            }
+            
+            // 生成時段時，更新最大時段數量
+            const slotDurationInput = document.getElementById('slotDuration');
+            const slotsPerDayInput = document.getElementById('slotsPerDay');
+            const startHourInput = document.getElementById('startHour');
+            
+            function updateMaxSlots() {
+                if (!slotDurationInput || !slotsPerDayInput || !startHourInput) return;
+                
+                const slotDuration = parseInt(slotDurationInput.value);
+                const startHour = parseInt(startHourInput.value);
+                
+                if (slotDuration && startHour >= 0 && startHour < 24) {
+                    // 計算從開始時間到午夜能容納的最大時段數
+                    const minutesInDay = (24 - startHour) * 60;
+                    const maxSlots = Math.floor(minutesInDay / slotDuration);
+                    
+                    slotsPerDayInput.max = maxSlots;
+                    slotsPerDayInput.title = `最大值：${maxSlots}時段`;
+                    
+                    // 如果當前值超過最大值，則更新
+                    if (parseInt(slotsPerDayInput.value) > maxSlots) {
+                        slotsPerDayInput.value = maxSlots;
+                    }
+                }
+            }
+            
+            if (slotDurationInput && startHourInput) {
+                slotDurationInput.addEventListener('change', updateMaxSlots);
+                startHourInput.addEventListener('change', updateMaxSlots);
+                
+                // 初始化最大時段數
+                updateMaxSlots();
+            }
+        });
+    </script>
+</head>
+<body>    <div class="container">        <h1>可預約時段管理</h1>
+        
+        <div style="margin-bottom: 20px;">
+            <a href="/fake-users" class="back-link">← 返回用戶列表</a>
+        </div>
+          <!-- 用於JavaScript的數據元素，避免模板語法在JS中造成錯誤 -->
+        <div id="pageData" 
+            data-has-slots="{{ if .slots }}true{{ else }}false{{ end }}" 
+            style="display:none"></div>
+        
+        <div class="tab-container">
+            <div class="tab active" data-target="generateTab">生成時段</div>
+            <div class="tab" data-target="viewTab">查看時段</div>
+        </div>
+          <div id="generateTab" class="tab-content active">
+            <form method="POST" action="/available-slots/generate">
+                <div class="form-row">
+                    <div class="form-column">
+                        <div class="form-group">
+                            <label for="doctorID">選擇醫師/治療師：</label>
+                            <select id="doctorID" name="doctorID" required>
+                                <option value="">-- 請選擇 --</option>
+                                {{ if .doctors }}
+                                    <optgroup label="醫師">
+                                        {{ range .doctors }}
+                                            <option value="{{ .ID }}" data-type="doctor" {{ if eq $.selectedID .ID }}selected{{ end }}>
+                                                {{ .Username }} ({{ .Account }})
+                                            </option>
+                                        {{ end }}
+                                    </optgroup>
+                                {{ end }}
+                                
+                                {{ if .therapists }}
+                                    <optgroup label="治療師">
+                                        {{ range .therapists }}
+                                            <option value="{{ .ID }}" data-type="therapist" {{ if eq $.selectedID .ID }}selected{{ end }}>
+                                                {{ .Username }} ({{ .Account }})
+                                            </option>
+                                        {{ end }}
+                                    </optgroup>
+                                {{ end }}
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-column">
+                        <div class="form-group">
+                            <label for="days">生成天數：</label>
+                            <input type="number" id="days" name="days" min="1" max="365" value="7" required>
+                            <small>從今天開始，要生成多少天的預約時段</small>
+                        </div>
+                    </div>
+                    
+                    <div class="form-column">
+                        <div class="form-group">
+                            <label for="startHour">開始時間（小時）：</label>
+                            <input type="number" id="startHour" name="startHour" min="0" max="23" value="8" required>
+                            <small>每天開始看診的小時（0-23）</small>
+                        </div>
+                    </div>
+                    
+                    <div class="form-column">
+                        <div class="form-group">
+                            <label for="slotDuration">每個時段持續時間（分鐘）：</label>
+                            <input type="number" id="slotDuration" name="slotDuration" min="15" max="240" value="60" required>
+                            <small>每個預約時段持續多少分鐘</small>
+                        </div>
+                    </div>
+                    
+                    <div class="form-column">
+                        <div class="form-group">
+                            <label for="slotsPerDay">每天時段數量：</label>
+                            <input type="number" id="slotsPerDay" name="slotsPerDay" min="1" max="16" value="8" required>
+                            <small>每天產生的預約時段數量</small>
+                        </div>
+                    </div>
+                </div>
+                
+                <button type="submit">生成預約時段</button>
+            </form>
+        </div>
+          <div id="viewTab" class="tab-content">
+            <div class="form-row">
+                <div class="form-column">
+                    <div class="form-group">
+                        <label for="provider">選擇醫師/治療師：</label>
+                        <select id="provider" name="provider">
+                            <option value="">-- 請選擇 --</option>
+                            {{ if .doctors }}
+                                <optgroup label="醫師">
+                                    {{ range .doctors }}
+                                        <option value="{{ .ID }}" data-type="doctor" {{ if eq $.selectedID .ID }}selected{{ end }}>
+                                            {{ .Username }} ({{ .Account }})
+                                        </option>
+                                    {{ end }}
+                                </optgroup>
+                            {{ end }}
+                            
+                            {{ if .therapists }}
+                                <optgroup label="治療師">
+                                    {{ range .therapists }}
+                                        <option value="{{ .ID }}" data-type="therapist" {{ if eq $.selectedID .ID }}selected{{ end }}>
+                                            {{ .Username }} ({{ .Account }})
+                                        </option>
+                                    {{ end }}
+                                </optgroup>
+                            {{ end }}
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-column">
+                    <button type="button" id="viewButton" class="btn-secondary">查看預約時段</button>
+                </div>
+            </div>
+        </div>
+        
+        {{ if .message }}
+            <div class="message">{{ .message }}</div>
+        {{ end }}
+        {{ if .error }}
+            <div class="error">{{ .error }}</div>
+        {{ end }}
+        
+        {{ if .slots }}
+            <h2>{{ if .providerName }}{{ .providerName }}{{ else }}已選醫師/治療師{{ end }} 的預約時段</h2>
+            
+            {{ $currentDate := "" }}
+            {{ $dateIndex := 0 }}
+            
+            {{ range $index, $slot := .slots }}
+                {{ $slotDate := $slot.SlotDate.Format "2006-01-02" }}
+                  {{ if ne $currentDate $slotDate }}
+                    {{ if ne $currentDate "" }}
+                        </div>
+                    </div>
+                    {{ end }}                    <div class="slot-date-group">                        <div class="slot-date-header">
+                            {{ if eq $slotDate "0001-01-01" }}
+                                日期無效，請聯繫管理員
+                            {{ else }}
+                                {{ $slotDate }} ({{ formatWeekday $slot.SlotDate }})
+                            {{ end }}
+                        </div>
+                        <div class="slot-container">                    {{ $currentDate = $slotDate }}
+                {{ end }}
+                  <div class="slot-item">
+                    <div class="slot-time">
+                        {{ $slot.SlotBeginTime.Format "15:04" }} - {{ $slot.SlotEndTime.Format "15:04" }}
+                    </div>
+                    <span class="slot-status {{ if $slot.IsBooked }}slot-booked{{ else }}slot-available{{ end }}">
+                        {{ if $slot.IsBooked }}已預約{{ else }}可預約{{ end }}
+                    </span>
+                    <div class="slot-actions">
+                        <a href="/available-slots/edit/{{ $slot.ID }}" class="slot-edit-btn" title="編輯">
+                            <i class="icon-edit">✎</i>
+                        </a>                        <button class="slot-delete-btn" title="刪除" onclick="deleteSlot('{{ $slot.ID }}', '{{ $slot.Doctor }}')">
+                            <i class="icon-delete">✖</i>
+                        </button>
+                    </div>
+                </div>
+            {{ end }}
+            
+            {{ if .slots }}
+                </div>
+            </div>
+            {{ end }}
+        {{ end }}
+    </div>      <!-- 不再需要過濾函數，因為選擇器已經使用了 optgroup 分組顯示 -->
+    <script>
+        // 刪除時段功能
+        function deleteSlot(slotID, doctorID) {
+            if (confirm('確定要刪除此預約時段嗎？此操作無法恢復。')) {
+                const xhr = new XMLHttpRequest();
+                xhr.open('DELETE', '/available-slots/delete/' + slotID + '?doctorID=' + doctorID);
+                xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+                xhr.onload = function() {
+                    if (xhr.status === 200) {
+                        const response = JSON.parse(xhr.responseText);
+                        if (response.success) {
+                            alert('時段已成功刪除');
+                            // 重新載入頁面以更新列表
+                            window.location.reload();
+                        } else {
+                            alert('刪除失敗: ' + (response.error || '未知錯誤'));
+                        }
+                    } else {
+                        alert('刪除請求失敗，請稍後再試');
+                    }
+                };
+                xhr.onerror = function() {
+                    alert('網絡錯誤，請檢查您的連接');
+                };
+                xhr.send();
+            }
+        }          // 如果有選定的醫師/治療師且顯示時段，自動切換到查看標籤
+        document.addEventListener('DOMContentLoaded', function() {
+            // 從數據元素獲取時段信息
+            var pageData = document.getElementById('pageData');
+            var hasSlots = false;
+            
+            if (pageData) {
+                hasSlots = pageData.getAttribute('data-has-slots') === 'true';
+            }
+                
+            if (hasSlots) {
+                const viewTab = document.querySelector('.tab[data-target="viewTab"]');
+                if (viewTab) {
+                    viewTab.click();
+                }
+            }
+        });
+    </script>
+</body>
+</html>

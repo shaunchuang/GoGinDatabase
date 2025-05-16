@@ -152,8 +152,7 @@
         }
         tr:hover {
             background-color: #f0f0f0;
-        }
-        .role-badge {
+        }        .role-badge {
             display: inline-block;
             background-color: #e0e0e0;
             border-radius: 4px;
@@ -167,6 +166,30 @@
             color: #2c3e50;
             margin-top: 30px;
             margin-bottom: 15px;
+        }
+        .user-link {
+            color: #2196F3;
+            text-decoration: none;
+            font-weight: bold;
+            transition: color 0.3s;
+        }        .user-link:hover {
+            color: #0D47A1;
+            text-decoration: underline;
+        }
+        .filter-btn {
+            background-color: #e0e0e0;
+            color: #333;
+            padding: 8px 15px;
+            margin-right: 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+        .filter-btn:hover, .filter-btn.active {
+            background-color: #4CAF50;
+            color: white;
         }
     </style>    <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -281,25 +304,48 @@
         {{ end }}
         {{ if .error }}
             <div class="error">{{ .error }}</div>
-        {{ end }}
-        {{ if .users }}
+        {{ end }}        {{ if .users }}
             <h2>最近產生的使用者</h2>
-            <table>
-                <thead>
+            <div style="margin-bottom: 15px;">
+                <button type="button" class="filter-btn" data-filter="all">顯示全部</button>
+                <button type="button" class="filter-btn" data-filter="doctor">只顯示醫師</button>
+                <button type="button" class="filter-btn" data-filter="therapist">只顯示治療師</button>
+            </div>
+            <table><thead>
                     <tr>
                         <th>ID</th>
-                        <th>姓名</th>
+                        <th>姓名 <small>(點擊醫師或治療師查看可預約時段)</small></th>
                         <th>電子郵件</th>
                         <th>帳號</th>
                         <th>電話</th>
                         <th>角色</th>
                     </tr>
                 </thead>
-                <tbody>
-                    {{ range .users }}
-                        <tr>
+                <tbody>                    {{ range .users }}
+                        {{ $isDoctor := false }}
+                        {{ $isTherapist := false }}
+                        {{ if .Roles }}
+                            {{ range .Roles }}
+                                {{ if eq .Alias "DOCTOR" }}
+                                    {{ $isDoctor = true }}
+                                {{ end }}
+                                {{ if or (eq .Alias "DTX_PSY") (eq .Alias "DTX_ST") (eq .Alias "DTX_OT") (eq .Alias "DTX_PI") }}
+                                    {{ $isTherapist = true }}
+                                {{ end }}
+                            {{ end }}
+                        {{ end }}
+                        <tr class="user-row" 
+                           {{ if $isDoctor }}data-type="doctor"{{ end }}
+                           {{ if $isTherapist }}data-type="therapist"{{ end }}>
                             <td>{{ .ID }}</td>
-                            <td>{{ .Username }}</td>
+                            <td>
+                                
+                                {{ if or $isDoctor $isTherapist }}
+                                    <a href="/available-slots/view?doctorID={{ .ID }}" class="user-link">{{ .Username }}</a>
+                                {{ else }}
+                                    {{ .Username }}
+                                {{ end }}
+                            </td>
                             <td>{{ .Email }}</td>
                             <td>{{ .Account }}</td>
                             <td>{{ .TelCell }}</td>
@@ -315,10 +361,59 @@
                         </tr>
                     {{ end }}
                 </tbody>
-            </table>
-        {{ else }}
+            </table>        {{ else }}
             <p>資料庫中沒有找到使用者。</p>
         {{ end }}
     </div>
+    
+    <script>
+        // 篩選按鈕功能
+        document.addEventListener('DOMContentLoaded', function() {
+            const filterButtons = document.querySelectorAll('.filter-btn');
+            const userRows = document.querySelectorAll('.user-row');
+            
+            // 初始設定所有行可見
+            userRows.forEach(row => {
+                row.style.display = '';
+            });
+            
+            // 設置 "顯示全部" 按鈕為預設激活狀態
+            document.querySelector('.filter-btn[data-filter="all"]').classList.add('active');
+            
+            // 為每個篩選按鈕添加點擊事件
+            filterButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    // 移除所有按鈕的 active 類別
+                    filterButtons.forEach(btn => {
+                        btn.classList.remove('active');
+                    });
+                    
+                    // 添加當前按鈕的 active 類別
+                    this.classList.add('active');
+                    
+                    const filterType = this.getAttribute('data-filter');
+                    
+                    // 根據選擇的篩選類型顯示或隱藏行
+                    userRows.forEach(row => {
+                        if (filterType === 'all') {
+                            row.style.display = '';
+                        } else if (filterType === 'doctor') {
+                            if (row.hasAttribute('data-type') && row.getAttribute('data-type') === 'doctor') {
+                                row.style.display = '';
+                            } else {
+                                row.style.display = 'none';
+                            }
+                        } else if (filterType === 'therapist') {
+                            if (row.hasAttribute('data-type') && row.getAttribute('data-type') === 'therapist') {
+                                row.style.display = '';
+                            } else {
+                                row.style.display = 'none';
+                            }
+                        }
+                    });
+                });
+            });
+        });
+    </script>
 </body>
 </html>
