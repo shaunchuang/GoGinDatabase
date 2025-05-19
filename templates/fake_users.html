@@ -7,7 +7,7 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            max-width: 900px;
+            max-width: 1200px; /* 調整寬度 */
             margin: 0 auto;
             padding: 20px;
             background-color: #f8f9fa;
@@ -191,6 +191,20 @@
             background-color: #4CAF50;
             color: white;
         }
+        .back-link {
+            display: inline-block;
+            margin-right: 15px;
+            margin-bottom: 15px;
+            padding: 10px 15px;
+            background-color: #2196F3;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+        .back-link:hover {
+            background-color: #1976D2;
+        }
     </style>    <script>
         document.addEventListener('DOMContentLoaded', function() {
             // 獲取元素
@@ -268,6 +282,10 @@
 <body>
     <div class="container">
         <h1>產生假使用者</h1>
+        <div style="margin-bottom: 20px;">
+            <a href="/fake-patients" class="back-link">切換到病患管理</a>
+            <a href="/roles" class="back-link">切換到角色管理</a>
+        </div>
         <form method="POST" action="/fake-users">
             <label for="userType">使用者類型:</label>
             <select id="userType" name="userType">

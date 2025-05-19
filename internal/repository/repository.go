@@ -591,3 +591,27 @@ func (r *UserRepository) GetAvailableSlotByID(ctx context.Context, slotID int64)
 
 	return slot, nil
 }
+
+// RoleRepository 角色資料庫操作
+type RoleRepository struct {
+	DB *sql.DB
+}
+
+// NewRoleRepository 建立新的 RoleRepository
+func NewRoleRepository(db *sql.DB) *RoleRepository {
+	return &RoleRepository{DB: db}
+}
+
+// AddRole 新增角色
+func (r *RoleRepository) AddRole(alias, description string) error {
+	query := "INSERT INTO role (alias, description) VALUES (?, ?)"
+	_, err := r.DB.Exec(query, alias, description)
+	return err
+}
+
+// DeleteRole 刪除角色
+func (r *RoleRepository) DeleteRole(roleID string) error {
+	query := "DELETE FROM role WHERE ID = ?"
+	_, err := r.DB.Exec(query, roleID)
+	return err
+}

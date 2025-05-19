@@ -197,6 +197,10 @@ func (a *App) initializeRoutes() {
 		a.Router.GET("/fake-users-secondary", handlers.GenerateFakeUsersFormHandler(a.ServiceSecondary))
 		a.Router.POST("/fake-users-secondary", handlers.GenerateFakeUsersHandler(a.ServiceSecondary))
 	}
+
+	repoRole := repository.NewRoleRepository(a.DB)
+	a.Router.POST("/roles/add", handlers.AddRoleHandler(repoRole))
+	a.Router.POST("/roles/delete/:id", handlers.DeleteRoleHandler(repoRole))
 }
 
 func (a *App) initializeMiddleware() {

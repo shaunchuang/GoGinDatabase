@@ -7,6 +7,8 @@ import (
 	"strconv"
 	"strings"
 
+	"golang-gin-app/internal/repository"
+
 	"github.com/gin-gonic/gin"
 )
 
@@ -157,5 +159,37 @@ func GenerateFakeUsersHandler(svc *service.Service) gin.HandlerFunc {
 			"users":   users,
 			"roles":   roles,
 		})
+	}
+}
+
+func AddRoleHandler(repo *repository.RoleRepository) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		var role struct {
+			Alias       string `json:"alias" binding:"required"`
+			Description string `json:"description"`
+		}
+		if err := c.ShouldBindJSON(&role); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input"})
+			return
+		}
+
+		if err := repo.AddRole(role.Alias, role.Description); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to add role"})
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{"message": "Role added successfully"})
+	}
+}
+
+func DeleteRoleHandler(repo *repository.RoleRepository) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		roleID := c.Param("id")
+		if err := repo.DeleteRole(roleID); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete role"})
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{"message": "Role deleted successfully"})
 	}
 }
