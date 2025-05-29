@@ -312,6 +312,7 @@ func GenerateFakePatients(count int) ([]*models.Patient, error) {
 
 		patient := &models.Patient{
 			ID:                  int64(i + 1),
+			UserID:              int64(rand.Intn(100) + 1), // 隨機分配一個用戶ID
 			Name:                generateChineseName(),
 			Gender:              gender,
 			IDNo:                idno,

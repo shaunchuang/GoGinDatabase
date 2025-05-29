@@ -14,11 +14,11 @@ function showInsertSQL() {
         patientsData.forEach(function(patient) {
             // 主要病患資料 SQL
             sql += "-- 插入病患 " + patient.Name + "\n";
-            sql += "INSERT INTO patient (name, gender, idno, age, birth, address, city, district, phone, mail, disease_id, emergency_contact, emergency_phone, emergency_relation, OTHERHISTORYDISEASE, OTHERMEDICALHISTORY)\n";
+            sql += "INSERT INTO patient (name, gender, idno, age, birth, address, city, district, phone, mail, disease_id, emergency_contact, emergency_phone, emergency_relation, OTHERHISTORYDISEASE, OTHERMEDICALHISTORY, user_id)\n";
             sql += "VALUES ('" + patient.Name + "', '" + patient.Gender + "', '" + patient.IDNo + "', " + patient.Age + ", '" + formatDate(patient.Birth) + "',\n";
             sql += "'" + patient.Address + "', '" + patient.City + "', '" + patient.District + "', '" + patient.Phone + "', '" + patient.Mail + "',\n";
             sql += patient.DiseaseID + ", '" + patient.EmergencyContact + "', '" + patient.EmergencyPhone + "', '" + patient.EmergencyRelation + "',\n";
-            sql += "'" + (patient.OtherHistoryDisease || "") + "', '" + (patient.OtherMedicalHistory || "") + "');\n\n";
+            sql += "'" + (patient.OtherHistoryDisease || "") + "', '" + (patient.OtherMedicalHistory || "") + "', " + (patient.UserID || 1) + ");\n\n";
             
             // 使用 LAST_INSERT_ID() 獲取最後插入的 ID
             sql += "-- 使用以下變數來存儲最後插入的ID\n";
@@ -64,7 +64,7 @@ function copyToClipboard() {
 
 // 匯出 CSV
 function exportToCSV() {
-    let csvContent = "ID,姓名,性別,身分證字號,年齡,生日,城市,區域,地址,電話,信箱,疾病ID,緊急聯絡人,緊急聯絡人電話,緊急聯絡人關係,其他疾病史,其他醫療史,疾病史,醫療史\n";
+    let csvContent = "ID,用戶ID,姓名,性別,身分證字號,年齡,生日,城市,區域,地址,電話,信箱,疾病ID,緊急聯絡人,緊急聯絡人電話,緊急聯絡人關係,其他疾病史,其他醫療史,疾病史,醫療史\n";
     
     if (patientsData && patientsData.length > 0) {
         patientsData.forEach(function(patient) {
@@ -73,7 +73,7 @@ function exportToCSV() {
             const historyDiseases = patient.HistoryDiseases ? patient.HistoryDiseases.join('|') : '';
             const medicalHistories = patient.MedicalHistories ? patient.MedicalHistories.join('|') : '';
             
-            csvContent += patient.ID + "," + patient.Name + "," + gender + "," + patient.IDNo + "," + patient.Age + "," + birthDate + "," + 
+            csvContent += patient.ID + "," + (patient.UserID || '') + "," + patient.Name + "," + gender + "," + patient.IDNo + "," + patient.Age + "," + birthDate + "," + 
                         patient.City + "," + patient.District + "," + patient.Address + "," + patient.Phone + "," + patient.Mail + "," + 
                         patient.DiseaseID + "," + patient.EmergencyContact + "," + patient.EmergencyPhone + "," + patient.EmergencyRelation + "," + 
                         (patient.OtherHistoryDisease || '') + "," + (patient.OtherMedicalHistory || '') + "," + historyDiseases + "," + medicalHistories + "\n";

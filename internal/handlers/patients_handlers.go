@@ -71,13 +71,14 @@ func GenerateFakePatientsHandler(db *sql.DB) gin.HandlerFunc {
 				err := tx.QueryRow(`
 					INSERT INTO patient (name, gender, idno, age, birth, address, city, district, 
 						phone, mail, disease_id, emergency_contact, emergency_phone, emergency_relation,
-						OTHERHISTORYDISEASE, OTHERMEDICALHISTORY)
-					VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) 
+						OTHERHISTORYDISEASE, OTHERMEDICALHISTORY, user_id)
+					VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) 
 					RETURNING ID`,
 					patient.Name, patient.Gender, patient.IDNo, patient.Age, patient.Birth,
 					patient.Address, patient.City, patient.District, patient.Phone, patient.Mail,
 					patient.DiseaseID, patient.EmergencyContact, patient.EmergencyPhone,
 					patient.EmergencyRelation, patient.OtherHistoryDisease, patient.OtherMedicalHistory,
+					patient.UserID,
 				).Scan(&patientID)
 
 				if err != nil {
@@ -87,7 +88,8 @@ func GenerateFakePatientsHandler(db *sql.DB) gin.HandlerFunc {
 
 				// 更新 ID 以便在前端顯示
 				patient.ID = patientID
-				ids = append(ids, patientID) // 插入病史資料
+				ids = append(ids, patientID)
+				// 插入病史資料
 				for _, historyDisease := range patient.HistoryDiseases {
 					// 根據疾病名稱查詢對應的 ID
 					var diseaseID int64
@@ -141,7 +143,9 @@ func GenerateFakePatientsHandler(db *sql.DB) gin.HandlerFunc {
 					errorMessages = append(errorMessages, "無法提交資料庫交易: "+err.Error())
 				}
 			}
-		} // 返回結果
+		}
+
+		// 返回結果
 		c.HTML(http.StatusOK, "fake_patients.html", gin.H{
 			"title":        "產生假病患資料",
 			"patients":     patients,
