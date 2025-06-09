@@ -115,18 +115,25 @@ func GenerateAvailableSlotsHandler(svc *service.Service) gin.HandlerFunc {
 		// 重新取得醫生與治療師列表
 		allDoctors, _ = svc.GetDoctorUsers(c.Request.Context())
 		allTherapists, _ = svc.GetTherapistUsers(c.Request.Context())
-
 		// 尋找醫生/治療師姓名
 		for _, doctor := range allDoctors {
 			if doctor.ID == doctorID {
-				providerName = doctor.Username
+				if doctor.Username != nil {
+					providerName = *doctor.Username
+				} else {
+					providerName = "未設定姓名"
+				}
 				break
 			}
 		}
 		if providerName == "" {
 			for _, therapist := range allTherapists {
 				if therapist.ID == doctorID {
-					providerName = therapist.Username
+					if therapist.Username != nil {
+						providerName = *therapist.Username
+					} else {
+						providerName = "未設定姓名"
+					}
 					break
 				}
 			}
@@ -181,19 +188,26 @@ func ViewAvailableSlotsHandler(svc *service.Service) gin.HandlerFunc {
 		// 獲取所有醫師和治療師
 		doctors, _ := svc.GetDoctorUsers(c.Request.Context())
 		therapists, _ := svc.GetTherapistUsers(c.Request.Context())
-
 		// 找到選定的醫師/治療師名稱
 		var providerName string
 		for _, doctor := range doctors {
 			if doctor.ID == doctorID {
-				providerName = doctor.Username
+				if doctor.Username != nil {
+					providerName = *doctor.Username
+				} else {
+					providerName = "未設定姓名"
+				}
 				break
 			}
 		}
 		if providerName == "" {
 			for _, therapist := range therapists {
 				if therapist.ID == doctorID {
-					providerName = therapist.Username
+					if therapist.Username != nil {
+						providerName = *therapist.Username
+					} else {
+						providerName = "未設定姓名"
+					}
 					break
 				}
 			}

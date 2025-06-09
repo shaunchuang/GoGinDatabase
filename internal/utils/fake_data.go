@@ -168,10 +168,8 @@ func GenerateFakeUser(userType string) *models.User {
 		account = fmt.Sprintf("therapy%d", number)
 		email = fmt.Sprintf("%s@example.com", account)
 	}
-
 	// 使用我們自定義的 taiwan_phone 生成器
 	phoneNumber, _ := gofakeit.Generate("{taiwan_phone}")
-
 	return &models.User{
 		Account:       account,
 		CreateTime:    now,
@@ -180,9 +178,9 @@ func GenerateFakeUser(userType string) *models.User {
 		Password:      "$2a$12$qDECDR.WBiP2Xueb5ftW3.LKslm6.Gs7oeTH1T3SmnUxpucvUm8sW",
 		Status:        "APPROVED",
 		SteamID:       &steamID,
-		TelCell:       phoneNumber,
+		TelCell:       &phoneNumber,
 		// 產生像「張偉」「李欣怡」這樣的中文姓名
-		Username: username,
+		Username: &username,
 		// 初始化空角色陣列
 		Roles: make([]*models.Role, 0),
 	}

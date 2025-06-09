@@ -355,18 +355,19 @@
                         <tr class="user-row" 
                            {{ if $isDoctor }}data-type="doctor"{{ end }}
                            {{ if $isTherapist }}data-type="therapist"{{ end }}>
-                            <td>{{ .ID }}</td>
-                            <td>
+                            <td>{{ .ID }}</td>                            <td>
                                 
                                 {{ if or $isDoctor $isTherapist }}
-                                    <a href="/available-slots/view?doctorID={{ .ID }}" class="user-link">{{ .Username }}</a>
+                                    <a href="/available-slots/view?doctorID={{ .ID }}" class="user-link">
+                                        {{ if .Username }}{{ .Username }}{{ else }}未設定{{ end }}
+                                    </a>
                                 {{ else }}
-                                    {{ .Username }}
+                                    {{ if .Username }}{{ .Username }}{{ else }}未設定{{ end }}
                                 {{ end }}
                             </td>
                             <td>{{ .Email }}</td>
                             <td>{{ .Account }}</td>
-                            <td>{{ .TelCell }}</td>
+                            <td>{{ if .TelCell }}{{ .TelCell }}{{ else }}未設定{{ end }}</td>
                             <td>
                                 {{ if .Roles }}
                                     {{ range .Roles }}
