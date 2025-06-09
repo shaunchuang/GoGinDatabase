@@ -11,8 +11,8 @@ type User struct {
 	Password      string     `json:"password"`
 	Status        string     `json:"status"`
 	SteamID       *string    `json:"steam_id"`
-	TelCell       string     `json:"tel_cell"`
-	Username      string     `json:"username"`
+	TelCell       *string    `json:"tel_cell"`
+	Username      *string    `json:"username"`
 	// 新增欄位，用於前端顯示角色
 	Roles []*Role `json:"roles,omitempty"`
 }

@@ -66,12 +66,32 @@ func (r *UserRepository) GetByID(ctx context.Context, id string) (*models.User, 
               FROM user WHERE ID = ?`
 	row := r.db.QueryRowContext(ctx, query, id)
 	user := &models.User{}
+	var telCell sql.NullString
+	var username sql.NullString
 	err := row.Scan(&user.ID, &user.Account, &user.CreateTime, &user.Email, &user.LastLoginDate,
-		&user.Password, &user.Status, &user.SteamID, &user.TelCell, &user.Username)
+		&user.Password, &user.Status, &user.SteamID, &telCell, &username)
 	if err == sql.ErrNoRows {
 		return nil, nil
 	}
-	return user, err
+	if err != nil {
+		return nil, err
+	}
+
+	// 處理 tel_cell 的 NULL 值
+	if telCell.Valid {
+		user.TelCell = &telCell.String
+	} else {
+		user.TelCell = nil
+	}
+
+	// 處理 username 的 NULL 值
+	if username.Valid {
+		user.Username = &username.String
+	} else {
+		user.Username = nil
+	}
+
+	return user, nil
 }
 
 // Update modifies an existing user in the database.
@@ -154,11 +174,28 @@ func (r *UserRepository) ListUsers(ctx context.Context, limit int) ([]*models.Us
 	users := make([]*models.User, 0)
 	for rows.Next() {
 		user := &models.User{}
+		var telCell sql.NullString
+		var username sql.NullString
 		err := rows.Scan(&user.ID, &user.Account, &user.CreateTime, &user.Email, &user.LastLoginDate,
-			&user.Password, &user.Status, &user.SteamID, &user.TelCell, &user.Username)
+			&user.Password, &user.Status, &user.SteamID, &telCell, &username)
 		if err != nil {
 			return nil, err
 		}
+
+		// 處理 tel_cell 的 NULL 值
+		if telCell.Valid {
+			user.TelCell = &telCell.String
+		} else {
+			user.TelCell = nil
+		}
+
+		// 處理 username 的 NULL 值
+		if username.Valid {
+			user.Username = &username.String
+		} else {
+			user.Username = nil
+		}
+
 		users = append(users, user)
 	}
 	return users, nil
@@ -330,10 +367,26 @@ func (r *UserRepository) GetUserByRoleID(ctx context.Context, roleID int64) ([]*
 	users := make([]*models.User, 0)
 	for rows.Next() {
 		user := &models.User{}
+		var telCell sql.NullString
+		var username sql.NullString
 		err := rows.Scan(&user.ID, &user.Account, &user.CreateTime, &user.Email, &user.LastLoginDate,
-			&user.Password, &user.Status, &user.SteamID, &user.TelCell, &user.Username)
+			&user.Password, &user.Status, &user.SteamID, &telCell, &username)
 		if err != nil {
 			return nil, fmt.Errorf("掃描用戶數據失敗: %v", err)
+		}
+
+		// 處理 tel_cell 的 NULL 值
+		if telCell.Valid {
+			user.TelCell = &telCell.String
+		} else {
+			user.TelCell = nil
+		}
+
+		// 處理 username 的 NULL 值
+		if username.Valid {
+			user.Username = &username.String
+		} else {
+			user.Username = nil
 		}
 
 		// 獲取該用戶的角色
